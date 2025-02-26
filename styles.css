@@ -11,6 +11,7 @@
 body * {
     font-family: 'Raleway', sans-serif;
     line-height: 160%;
+    zoom: 100%
 }
 
 body {
@@ -456,22 +457,20 @@ ul{
 
 }
 
-hyinya_s_nizy {
+.hyinya_s_nizy {
     font-family: 'Raleway', sans-serif;     
     padding-top: 710px;
     text-align: center;
     font-size: 10px;
-    color: white;
     margin: auto;
     letter-spacing: 1px;
 }
 
-hyinya_s_nizy a {
+.hyinya_snizy a {
     font-family: 'Raleway', sans-serif;    
     padding-top: 1px;
     text-align: center;
     font-size: 10px;
-    color: white;
     margin: auto;
     letter-spacing: 1px;
 }
