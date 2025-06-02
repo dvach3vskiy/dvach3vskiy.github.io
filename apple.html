@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bad Apple</title>
+    <link rel="icon" href="favicon.png" type="image/png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #000;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-family: 'Montserrat', sans-serif;
+            overflow-x: hidden;
+        }
+        
+        #container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 800px;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        
+        #video-container {
+            display: none;
+        }
+        
+        #ascii-container {
+            white-space: pre;
+            line-height: 8px;
+            font-size: 8px;
+            letter-spacing: 1px;
+            text-align: center;
+            margin: 10px 0;
+            width: 100%;
+            overflow: hidden;
+            font-family: monospace;
+            display: none;
+        }
+        
+        #controls {
+            display: flex;
+            gap: 10px;
+            margin: 10px 0;
+            justify-content: center;
+        }
+        
+        button {
+            padding: 12px 24px;
+            background: #333;
+            color: white;
+            border: none;
+            border-radius: 24px;
+            cursor: pointer;
+            font-family: 'Montserrat', sans-serif;
+            min-width: 100px;
+            font-weight: 500;
+            font-size: 16px;
+            transition: background 0.3s ease, transform 0.2s ease;
+        }
+        
+        button:hover {
+            background: #555;
+            transform: scale(1.03);
+        }
+        
+        #progress-container {
+            width: 100%;
+            height: 6px;
+            background: #333;
+            border-radius: 3px;
+            margin: 8px 0;
+            display: none;
+        }
+        
+        #progress-bar {
+            height: 100%;
+            background: #fc0fc0;
+            border-radius: 3px;
+            width: 0%;
+        }
+        
+        #error-message {
+            color: #f55;
+            margin: 8px 0;
+            text-align: center;
+            font-size: 12px;
+        }
+        
+        #toggle-btn {
+            background: #fc0fc0;
+            color: #fff;
+        }
+        
+        #toggle-btn.paused {
+            background: #333;
+            color: #fff;
+        }
+        
+        #footer {
+            margin-top: 20px;
+            font-size: 12px;
+            font-weight: 900;
+            text-align: center;
+        }
+        
+        .start-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            scale: 300%;
+        }
+        
+        .playback-screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            scale: 130%;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="video-container">
+            <video id="video" crossorigin="anonymous" src="apple.mp4"></video>
+        </div>
+        
+        <div class="start-screen" id="start-screen">
+            <div id="footer">
+                Rule 86: If it exists, you can play Bad Apple on it. No exceptions.
+            </div>
+            <div id="controls">
+                <button id="toggle-btn">Запуск</button>
+            </div>
+        </div>
+        
+        <div class="playback-screen" id="playback-screen">
+            <div id="error-message"></div>
+            <div id="ascii-container"></div>
+            <div id="progress-container">
+                <div id="progress-bar"></div>
+            </div>
+            <div id="controls">
+                <button id="runtime-toggle-btn">Пауза</button>
+                <button id="restart-btn">Рестарт</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const video = document.getElementById('video');
+        const asciiContainer = document.getElementById('ascii-container');
+        const toggleBtn = document.getElementById('toggle-btn');
+        const runtimeToggleBtn = document.getElementById('runtime-toggle-btn');
+        const restartBtn = document.getElementById('restart-btn');
+        const progressBar = document.getElementById('progress-bar');
+        const errorMessage = document.getElementById('error-message');
+        const startScreen = document.getElementById('start-screen');
+        const playbackScreen = document.getElementById('playback-screen');
+
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+
+        const asciiChars = " .:-=+vunmMQ%&@";
+        let width = 100;
+        let height = 50;
+        let isPlaying = false;
+
+        function init() {
+            canvas.width = width;
+            canvas.height = height;
+            
+            toggleBtn.addEventListener('click', startPlayback);
+            runtimeToggleBtn.addEventListener('click', togglePlayback);
+            restartBtn.addEventListener('click', restartVideo);
+            video.addEventListener('loadeddata', setupVideo);
+            video.addEventListener('timeupdate', updateProgress);
+            video.addEventListener('ended', restartVideo);
+            video.addEventListener('error', handleVideoError);
+            
+            video.preload = "auto";
+            video.load();
+        }
+
+        function handleVideoError() {
+            errorMessage.textContent = "Error loading video. Please make sure:";
+            errorMessage.innerHTML += "<br>1. 'apple.mp4' exists in this folder";
+            errorMessage.innerHTML += "<br>2. You're using a web server (not just opening the HTML file)";
+        }
+
+        function setupVideo() {
+            const aspectRatio = video.videoWidth / video.videoHeight;
+            height = Math.floor(width / aspectRatio);
+            canvas.width = width;
+            canvas.height = height;
+        }
+
+        function startPlayback() {
+            startScreen.style.display = 'none';
+            playbackScreen.style.display = 'flex';
+            asciiContainer.style.display = 'block';
+            playVideo();
+        }
+
+        function togglePlayback() {
+            if (isPlaying) {
+                pauseVideo();
+            } else {
+                playVideo();
+            }
+            updateButtonState();
+        }
+
+        function updateButtonState() {
+            runtimeToggleBtn.textContent = isPlaying ? "Пауза" : "Запуск";
+            runtimeToggleBtn.classList.toggle('paused', !isPlaying);
+        }
+
+        function playVideo() {
+            if (isPlaying) return;
+            
+            isPlaying = true;
+            document.getElementById('progress-container').style.display = 'block';
+            video.play().catch(e => {
+                errorMessage.textContent = "Playback failed: " + e.message;
+                isPlaying = false;
+                updateButtonState();
+            });
+            requestAnimationFrame(renderLoop);
+            updateButtonState();
+        }
+
+        function pauseVideo() {
+            if (!isPlaying) return;
+            
+            isPlaying = false;
+            video.pause();
+            updateButtonState();
+        }
+
+        function restartVideo() {
+            video.currentTime = 0;
+            if (isPlaying) {
+                video.play();
+            }
+            drawFrame();
+        }
+
+        function updateProgress() {
+            if (video.duration) {
+                const progress = (video.currentTime / video.duration) * 100;
+                progressBar.style.width = `${progress}%`;
+            }
+        }
+
+        function renderLoop() {
+            if (!isPlaying) return;
+            
+            drawFrame();
+            requestAnimationFrame(renderLoop);
+        }
+
+        function drawFrame() {
+            if (video.readyState < 2) return;
+            
+            try {
+                ctx.drawImage(video, 0, 0, width, height);
+                
+                const imageData = ctx.getImageData(0, 0, width, height);
+                const data = imageData.data;
+                
+                let asciiArt = '';
+                
+                for (let y = 0; y < height; y++) {
+                    for (let x = 0; x < width; x++) {
+                        const index = (y * width + x) * 4;
+                        const r = data[index];
+                        const g = data[index + 1];
+                        const b = data[index + 2];
+                        
+                        const brightness = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+                        
+                        const charIndex = Math.floor(brightness * (asciiChars.length - 1));
+                        const char = asciiChars[charIndex] || ' ';
+                        
+                        asciiArt += char;
+                    }
+                    asciiArt += '\n';
+                }
+                
+                asciiContainer.textContent = asciiArt;
+            } catch (e) {
+                console.error("Error drawing frame:", e);
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>
