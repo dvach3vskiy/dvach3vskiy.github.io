@@ -131,12 +131,96 @@
             width: 100%;
             scale: 130%;
         }
+
+        /* Мобильные стили только для маленьких экранов */
+        @media only screen and (max-width: 600px) {
+            * {
+                -webkit-tap-highlight-color: transparent;
+                -webkit-touch-callout: none;
+            }
+
+            body {
+                touch-action: manipulation;
+            }
+
+            #container {
+                padding: 10px;
+            }
+
+            #ascii-container {
+                line-height: 6px;
+                font-size: 6px;
+                letter-spacing: 0.5px;
+                margin: 5px 0;
+            }
+
+            #controls {
+                gap: 8px;
+                margin: 8px 0;
+                flex-wrap: wrap;
+            }
+
+            button {
+                padding: 10px 20px;
+                border-radius: 20px;
+                min-width: 80px;
+                font-size: 14px;
+                flex-grow: 1;
+            }
+
+            button:hover {
+                background: #333;
+                transform: none;
+            }
+
+            button:active {
+                background: #555;
+                transform: scale(0.98);
+            }
+
+            #progress-container {
+                height: 4px;
+                margin: 6px 0;
+            }
+
+            #error-message {
+                margin: 6px 0;
+                font-size: 11px;
+                padding: 0 10px;
+            }
+
+            #footer {
+                margin-top: 15px;
+                font-size: 11px;
+                padding: 0 10px;
+            }
+
+            .start-screen {
+                scale: 200%;
+            }
+
+            .playback-screen {
+                scale: 100%;
+            }
+        }
+
+        /* Дополнительные адаптации для очень маленьких экранов */
+        @media only screen and (max-width: 400px) {
+            #ascii-container {
+                font-size: 5px;
+                line-height: 5px;
+            }
+
+            .start-screen {
+                scale: 150%;
+            }
+        }
     </style>
 </head>
 <body>
     <div id="container">
         <div id="video-container">
-            <video id="video" crossorigin="anonymous" src="apple.mp4"></video>
+            <video id="video" crossorigin="anonymous" src="apple.mp4" playsinline></video>
         </div>
         
         <div class="start-screen" id="start-screen">
@@ -179,8 +263,14 @@
         let width = 100;
         let height = 50;
         let isPlaying = false;
+        let isMobile = window.innerWidth <= 600;
 
         function init() {
+            // Для мобильных уменьшаем ширину ASCII-арта
+            if (isMobile) {
+                width = Math.min(80, Math.floor(window.innerWidth / 8));
+            }
+            
             canvas.width = width;
             canvas.height = height;
             
@@ -192,8 +282,21 @@
             video.addEventListener('ended', restartVideo);
             video.addEventListener('error', handleVideoError);
             
+            // Для мобильных добавляем обработчики
+            if (isMobile) {
+                document.addEventListener('dblclick', (e) => e.preventDefault());
+                window.addEventListener('resize', handleResize);
+            }
+            
             video.preload = "auto";
             video.load();
+        }
+
+        function handleResize() {
+            if (isMobile) {
+                width = Math.min(80, Math.floor(window.innerWidth / 8));
+                setupVideo();
+            }
         }
 
         function handleVideoError() {
@@ -235,11 +338,18 @@
             
             isPlaying = true;
             document.getElementById('progress-container').style.display = 'block';
-            video.play().catch(e => {
-                errorMessage.textContent = "Playback failed: " + e.message;
-                isPlaying = false;
-                updateButtonState();
-            });
+            
+            // Для мобильных обрабатываем promise от video.play()
+            const playPromise = video.play();
+            
+            if (playPromise !== undefined && isMobile) {
+                playPromise.catch(e => {
+                    errorMessage.textContent = "Playback failed: " + e.message;
+                    isPlaying = false;
+                    updateButtonState();
+                });
+            }
+            
             requestAnimationFrame(renderLoop);
             updateButtonState();
         }
