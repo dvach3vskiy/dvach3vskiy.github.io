@@ -2,15 +2,11 @@
 <html>
 <head>
     <meta charset='utf-8'>
-	<!-- Название сайта -->
     <title>Arthur Leywin</title>
     <meta name='viewport' content='width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no'>
     <link rel="stylesheet" href="./styles.css">
-	<!-- Лого сайта -->
     <link rel="icon" type="image/x-icon" href="/assets/logo.ico"> 
-    <!-- Картинка которая будет показываться пока видео не загрузится. Советую добавить первый кадр из видео! --> 
     <video id="bg-video" muted loop autoplay poster="./assets/poster.png">
-		<!-- Ниже путь к видео в двух форматах -->
         <source src="./assets/video/1.webm" type="video/webm"> 
         <source src="./assets/video/1.mp4" type="video/mp4">   
     </video>
@@ -19,13 +15,12 @@
 </head>
 
 <body>
+    <div class="cursor"></div>
     <div id="vanta-bg">
         <header>
             <div>
-				<!-- Аватарка -->
                 <img src="./assets/profile_picture.png" alt="Profile picture"/> 
             </div>
-			<!-- Ник и коротко о себе -->
             <h3> 𝚍𝚟𝚊𝚌𝚑𝟹𝚟𝚜𝚔𝚒𝚢 </h3> 
             <center>
                 <hr style="width: 30%; color: white; margin: 10px 0;">
@@ -42,7 +37,6 @@
                 <div>
                     <div class="stream_buttons_list">
                         <ul>    
-                            <!-- Ниже ссылки -->
                           <center>  <li class="hyinya_snizy" style="margin-top: 10px; color: white;">
                             𝚂𝚘𝚌𝚒𝚊𝚕 𝙻𝚒𝚗𝚔𝚜</li></center>
                             <li class="stream_buttons" style="margin-top: 10px;">
@@ -116,11 +110,8 @@
                         </div>
 							<center>
                                 <div id="hyinya_snizy">
-                                        <!-- Ник и коротко о себе -->
                                         <p style="color: white;">𝙽𝚞𝚖𝚋𝚎𝚛 𝚘𝚏 𝚝𝚑𝚎 𝙺𝚒𝚗𝚐'𝚜 𝚜𝚎𝚛𝚟𝚊𝚗𝚝𝚜:</p> 
-								<!-- Счётчик сделан тут - moe-counter.glitch.me -->
 								<img src="https://count.getloli.com/@dvach3vskiy.github.io?name=dvach3vskiy.github.io&theme=rule34" alt=":dvach3vskiy.github.io" />
-								<!-- ПОМЕНЯЙ parad1st.github.io В ССЫЛКЕ НА СВОЁ -->
 							</center>
                         </ul>
                     </div>
@@ -129,6 +120,11 @@
         </ul>
     </div>
 </section>
-
+<script>
+const cursor = document.querySelector('.cursor');
+document.addEventListener('mousemove', e => {
+  cursor.style.left = e.clientX + 'px';
+  cursor.style.top = e.clientY + 'px';
+});</script>
 </main>	
 </html>

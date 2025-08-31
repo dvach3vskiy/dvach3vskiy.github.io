@@ -387,6 +387,13 @@
             drawFrame();
             requestAnimationFrame(renderLoop);
         }
+       
+       
+    const cursor = document.querySelector('.cursor');
+        document.addEventListener('mousemove', e => {
+    ursor.style.left = e.clientX + 'px';
+    cursor.style.top = e.clientY + 'px';
+    });
 
         function drawFrame() {
             if (video.readyState < 2) return;
@@ -423,6 +430,7 @@
         }
 
         init();
+    
     </script>
 </body>
 </html>
